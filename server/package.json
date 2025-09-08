@@ -18,7 +18,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@types/mongoose": "^5.11.96",
     "express": "^5.1.0",
+    "mongoose": "^8.18.1",
     "mssql": "^11.0.1",
     "mysql": "^2.18.1",
     "mysql2": "^3.14.5"
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/mssql": "^9.1.8",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }
 }
