@@ -1,18 +1,40 @@
-import React from 'react';
 
-function UserList({ users }) {
+import React, { useEffect, useState } from 'react';
+
+const UsersComponent = () => {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/users');
+                const data = await response.json();
+                setUsers(data);
+            } catch (error) {
+                console.error('שגיאה בטעינת המשתמשים:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, []);
+
+    if (loading) {
+        return <div>טוען...</div>;
+    }
+
     return (
-        <div className="mt-3">
-            <h3>User List</h3>
-            <ul className="list-group">
-                {users.map((user, index) => (
-                    <li key={index} className="list-group-item">
-                        {user.name} - {user.phone}
-                    </li>
+        <div>
+            <h1>משתמשים</h1>
+            <ul>
+                {users.map(user => (
+                    <li key={user._id}>{user.name} - {user.phone}</li>
                 ))}
             </ul>
         </div>
     );
-}
+};
 
-export default UserList;
+export default UsersComponent;

@@ -10,10 +10,7 @@ function ViewUsersButton({ onClick }) {
 
 function Admin() {
     const [showUsers, setShowUsers] = useState(false);
-    const [users, setUsers] = useState([
-        { name: 'User 1', phone: '123-456-7890' },
-        { name: 'User 2', phone: '987-654-3210' },
-    ]);
+    const [users, setUsers] = useState();
 
     const handleViewUsersClick = () => {
         setShowUsers(true);
