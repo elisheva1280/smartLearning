@@ -11,7 +11,7 @@ function Home() {
 
   const handleLogin = async () => {
     if (!name.trim() || !phone.trim()) {
-      alert('יש למלא שם וטלפון');
+      alert('📞📞📞 יש למלא שם וטלפון');
       return;
     }
     
