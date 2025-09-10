@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SubCategory } from '../models';
+import { SubCategory, Category } from '../models';
 
 export const getAllSubCategories = async (req: Request, res: Response) => {
     try {
@@ -22,7 +22,9 @@ export const getSubCategoryById = async (req: Request, res: Response) => {
 
 export const getSubCategoriesByCategory = async (req: Request, res: Response) => {
     try {
-        const subCategories = await SubCategory.find({ category_id: req.params.categoryId });
+        const category = await Category.findOne({ name: req.params.categoryId });
+        if (!category) return res.status(404).json({ error: 'קטגוריה לא נמצאה' });
+        const subCategories = await SubCategory.find({ category_id: category._id });
         res.json(subCategories);
     } catch (error) {
         res.status(500).json({ error: 'שגיאה בקבלת תת-קטגוריות לפי קטגוריה' });

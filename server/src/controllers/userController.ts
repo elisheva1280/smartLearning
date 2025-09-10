@@ -50,3 +50,13 @@ export const deleteUser = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'שגיאה במחיקת משתמש' });
     }
 };
+
+export const checkUser = async (req: Request, res: Response) => {
+    try {
+        const { name, phone } = req.body;
+        // Temporary: accept any user for testing
+        res.json({ exists: true });
+    } catch (error) {
+        res.status(500).json({ error: 'שגיאה בבדיקת משתמש' });
+    }
+};

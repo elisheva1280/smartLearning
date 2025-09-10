@@ -8,7 +8,8 @@ const connectDB = async () => {
         console.log('חיבור למסד הנתונים הצליח!');
     } catch (error) {
         console.error('שגיאה בחיבור למסד הנתונים:', error);
-        process.exit(1);
+        console.log('נסה שוב ב-5 שניות...');
+        setTimeout(() => connectDB(), 5000);
     }
 };
 
