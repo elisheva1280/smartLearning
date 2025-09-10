@@ -9,15 +9,54 @@ const HistoryPage = () => {
   useEffect(() => {
     const fetchUserHistory = async () => {
       try {
-        const userKey = localStorage.getItem('userKey');
-        if (!userKey) {
+        const userName = localStorage.getItem('userName');
+        const userPhone = localStorage.getItem('userPhone');
+        console.log('מחפש היסטוריה עבור:', userName, userPhone);
+        
+        if (!userName || !userPhone) {
+          console.log('אין נתוני משתמש');
           navigate('/');
           return;
         }
         
-        const response = await fetch(`http://localhost:3001/api/prompt-history/${userKey}`);
-        const data = await response.json();
-        setPrompts(data);
+        // קבלת כל הפרומפטים וסינון בצד הקליינט
+        const [usersResponse, promptsResponse, userCheckResponse] = await Promise.all([
+          fetch('http://localhost:3001/api/users'),
+          fetch('http://localhost:3001/api/prompts'),
+          fetch('http://localhost:3001/api/users/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: userName, phone: userPhone })
+          })
+        ]);
+        
+        const users = await usersResponse.json();
+        const allPrompts = await promptsResponse.json();
+        const userData = await userCheckResponse.json();
+        
+        console.log('נתונים:', { users, allPrompts, userData });
+        
+        if (userData.exists) {
+          console.log('משתמש קיים, מחפש פרומפטים עבור:', userName, userPhone);
+          // חיפוש המשתמש במערך המשתמשים
+          const currentUser = users.find(u => u.name === userName && u.phone === userPhone);
+          console.log('משתמש נמצא במערך:', currentUser);
+          
+          if (currentUser) {
+            // סינון פרומפטים של המשתמש הנוכחי
+            const userPrompts = allPrompts.filter(prompt => {
+              const promptUserId = prompt.user_id?._id || prompt.user_id;
+              console.log('משווה:', promptUserId, 'עם', currentUser._id);
+              return promptUserId === currentUser._id;
+            });
+            console.log('פרומפטים של המשתמש:', userPrompts);
+            setPrompts(userPrompts.reverse());
+          } else {
+            console.log('משתמש לא נמצא במערך');
+          }
+        } else {
+          console.log('משתמש לא קיים');
+        }
       } catch (error) {
         console.error('שגיאה בטעינת ההיסטוריה:', error);
       } finally {
@@ -125,11 +164,27 @@ const HistoryPage = () => {
                                 </div>
                                 <div>
                                   <h5 className="mb-1 fw-bold">
-                                    {prompt.category} - {prompt.subcategory}
+{(() => {
+                                      if (prompt.category && prompt.subcategory) {
+                                        return `${prompt.category} - ${prompt.subcategory}`;
+                                      }
+                                      const response = prompt.response || '';
+                                      const subcategoryMatch = response.match(/על ([^ב]+) בתחום/);
+                                      const categoryMatch = response.match(/בתחום ([^.]+)/);
+                                      const subcategory = subcategoryMatch?.[1]?.trim() || 'תת-קטגוריה';
+                                      const category = categoryMatch?.[1]?.trim() || 'קטגוריה';
+                                      return `${category} - ${subcategory}`;
+                                    })()}
                                   </h5>
                                   <small className="text-muted">
                                     <i className="bi bi-calendar me-1"></i>
-                                    {new Date(prompt.timestamp).toLocaleDateString('he-IL')}
+                                    {new Date(prompt.create_at).toLocaleString('he-IL', {
+                                      year: 'numeric',
+                                      month: '2-digit', 
+                                      day: '2-digit',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
                                   </small>
                                 </div>
                               </div>

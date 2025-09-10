@@ -50,11 +50,16 @@ export const getPromptsByCategory = async (req: Request, res: Response) => {
 
 export const createPrompt = async (req: Request, res: Response) => {
     try {
-        const { user_id, category_id, sub_category_id, prompt, response } = req.body;
-        const newPrompt = new Prompt({ user_id, category_id, sub_category_id, prompt, response });
+        console.log('*** קוד חדש - קבלתי בקשה ליצירת פרומפט ***:', req.body);
+        const { user_id, category_id, sub_category_id, category, subcategory, prompt, response } = req.body;
+        console.log('*** שדות חדשים - category:', category, 'subcategory:', subcategory);
+        const newPrompt = new Prompt({ user_id, category_id, sub_category_id, category, subcategory, prompt, response });
+        console.log('יוצר פרומפט חדש:', newPrompt);
         await newPrompt.save();
+        console.log('פרומפט נשמר בהצלחה!');
         res.status(201).json(newPrompt);
     } catch (error) {
+        console.error('שגיאה ביצירת פרומפט:', error);
         res.status(500).json({ error: 'שגיאה ביצירת פרומפט' });
     }
 };

@@ -54,8 +54,24 @@ export const deleteUser = async (req: Request, res: Response) => {
 export const checkUser = async (req: Request, res: Response) => {
     try {
         const { name, phone } = req.body;
-        // Temporary: accept any user for testing
-        res.json({ exists: true });
+        const user = await User.findOne({ name, phone });
+        
+        if (user) {
+            res.json({ 
+                exists: true, 
+                isAdmin: user.isAdmin || false,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    phone: user.phone
+                }
+            });
+        } else {
+            res.json({ 
+                exists: false,
+                isAdmin: false
+            });
+        }
     } catch (error) {
         res.status(500).json({ error: 'שגיאה בבדיקת משתמש' });
     }

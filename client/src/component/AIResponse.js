@@ -24,23 +24,53 @@ const AIResponse = () => {
         const responseText = `זוהי תשובה מדומה לשאלה שלך על ${subcategory} בתחום ${category}. התשובה נשמרת במסד הנתונים.`;
         setAiResponse(responseText);
         
-        // שמירה להיסטוריה
-        const userKey = localStorage.getItem('userKey');
-        if (userKey && !savedRef.current) {
+        // שמירה עם המשתמש הנוכחי
+        const userName = localStorage.getItem('userName');
+        const userPhone = localStorage.getItem('userPhone');
+        
+        if (userName && userPhone && !savedRef.current) {
           savedRef.current = true;
-          await fetch('http://localhost:3001/api/prompt-history', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: userKey,
-              category: category,
-              subcategory: subcategory,
-              prompt: prompt,
-              response: responseText
-            })
-          });
+          try {
+            console.log('מחפש משתמש:', userName, userPhone);
+            
+            // קבלת כל המשתמשים וחיפוש המשתמש הנוכחי
+            const usersResponse = await fetch('http://localhost:3001/api/users');
+            const users = await usersResponse.json();
+            const currentUser = users.find(u => u.name === userName && u.phone === userPhone);
+            
+            console.log('משתמש נמצא:', currentUser);
+            
+            if (currentUser) {
+              const promptData = {
+                user_id: currentUser._id,
+                prompt: prompt,
+                response: responseText,
+                category: category,
+                subcategory: subcategory
+              };
+              
+              console.log('שולח נתונים:', promptData);
+              
+              const saveResponse = await fetch('http://localhost:3001/api/prompts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(promptData)
+              });
+              
+              const saveResult = await saveResponse.json();
+              console.log('תוצאת שמירה:', saveResult);
+              
+              if (saveResponse.ok) {
+                console.log('פרומפט נשמר בהצלחה!');
+              } else {
+                console.error('שגיאה בשמירה:', saveResult);
+              }
+            } else {
+              console.log('משתמש לא נמצא');
+            }
+          } catch (saveError) {
+            console.error('שגיאה בשמירת פרומפט:', saveError);
+          }
         }
         
       } catch (error) {

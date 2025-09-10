@@ -24,20 +24,22 @@ const AdminPanel = () => {
       const usersData = await usersResponse.json();
       setUsers(usersData);
 
-      // קבלת כל ההיסטוריה
-      const historyResponse = await fetch('http://localhost:3001/api/prompt-history/all');
+      // קבלת כל הפרומפטים
+      const historyResponse = await fetch('http://localhost:3001/api/prompts');
       const historyData = await historyResponse.json();
       setAllHistory(historyData);
     } catch (error) {
       console.error('שגיאה בטעינת נתונים:', error);
+      setUsers([]);
+      setAllHistory([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filteredHistory = selectedUser 
-    ? allHistory.filter(item => item.userId === selectedUser)
-    : allHistory;
+    ? allHistory.filter(item => item.user_id?._id === selectedUser).reverse()
+    : allHistory.slice().reverse();
 
   if (loading) {
     return (
@@ -95,7 +97,7 @@ const AdminPanel = () => {
                     <div className="card border-0" style={{ background: "rgba(102, 126, 234, 0.1)" }}>
                       <div className="card-body text-center">
                         <i className="bi bi-people text-primary" style={{ fontSize: "2rem" }}></i>
-                        <h3 className="mt-2">{users.length}</h3>
+                        <h3 className="mt-2">{Array.isArray(users) ? users.length : 0}</h3>
                         <p className="mb-0">משתמשים רשומים</p>
                       </div>
                     </div>
@@ -104,7 +106,7 @@ const AdminPanel = () => {
                     <div className="card border-0" style={{ background: "rgba(118, 75, 162, 0.1)" }}>
                       <div className="card-body text-center">
                         <i className="bi bi-chat-dots text-primary" style={{ fontSize: "2rem" }}></i>
-                        <h3 className="mt-2">{allHistory.length}</h3>
+                        <h3 className="mt-2">{Array.isArray(allHistory) ? allHistory.length : 0}</h3>
                         <p className="mb-0">שאלות בסך הכל</p>
                       </div>
                     </div>
@@ -113,7 +115,7 @@ const AdminPanel = () => {
                     <div className="card border-0" style={{ background: "rgba(34, 197, 94, 0.1)" }}>
                       <div className="card-body text-center">
                         <i className="bi bi-person-check text-success" style={{ fontSize: "2rem" }}></i>
-                        <h3 className="mt-2">{new Set(allHistory.map(h => h.userId)).size}</h3>
+                        <h3 className="mt-2">{Array.isArray(allHistory) && allHistory.length > 0 ? new Set(allHistory.map(h => h.user_id?._id).filter(Boolean)).size : 0}</h3>
                         <p className="mb-0">משתמשים פעילים</p>
                       </div>
                     </div>
@@ -130,20 +132,26 @@ const AdminPanel = () => {
                       style={{ borderRadius: "1rem" }}
                     >
                       <option value="">כל המשתמשים</option>
-                      {[...new Set(allHistory.map(h => h.userId))].map(userId => (
-                        <option key={userId} value={userId}>{userId}</option>
-                      ))}
+                      {Array.isArray(allHistory) && allHistory.length > 0 && [...new Set(allHistory.map(h => h.user_id?._id).filter(Boolean))].map(userId => {
+                        const historyItem = allHistory.find(h => h.user_id?._id === userId);
+                        const userName = historyItem?.user_id?.name || 'משתמש לא ידוע';
+                        return (
+                          <option key={userId} value={userId}>
+                            {userName}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
                   <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                    {filteredHistory.length === 0 ? (
+                    {!Array.isArray(filteredHistory) || filteredHistory.length === 0 ? (
                       <div className="text-center py-4">
                         <i className="bi bi-inbox text-muted" style={{ fontSize: "3rem" }}></i>
                         <p className="text-muted mt-2">אין היסטוריה</p>
                       </div>
                     ) : (
-                      filteredHistory.map((item, index) => (
+                      Array.isArray(filteredHistory) && filteredHistory.map((item, index) => (
                         <div key={item._id} className="card mb-3 border-0" style={{
                           background: "rgba(102, 126, 234, 0.05)",
                           borderRadius: "1rem"
@@ -151,18 +159,36 @@ const AdminPanel = () => {
                           <div className="card-body p-3">
                             <div className="d-flex justify-content-between align-items-start mb-2">
                               <div>
-                                <h6 className="mb-1 fw-bold text-primary">{item.userId}</h6>
+                                <h6 className="mb-1 fw-bold text-primary">
+                                  {item.user_id?.name || 'משתמש לא ידוע'} - {item.user_id?.phone || 'טלפון לא ידוע'}
+                                </h6>
                                 <small className="text-muted">
-                                  {item.category} • {item.subcategory} • 
-                                  {new Date(item.timestamp).toLocaleDateString('he-IL')}
+                                  {(() => {
+                                    if (item.category && item.subcategory) {
+                                      return `${item.category} • ${item.subcategory}`;
+                                    }
+                                    const response = item.response || '';
+                                    const subcategoryMatch = response.match(/על ([^ב]+) בתחום/);
+                                    const categoryMatch = response.match(/בתחום ([^.]+)/);
+                                    const subcategory = subcategoryMatch?.[1]?.trim() || 'תת-קטגוריה';
+                                    const category = categoryMatch?.[1]?.trim() || 'קטגוריה';
+                                    return `${category} • ${subcategory}`;
+                                  })()} • 
+                                  {item.create_at ? new Date(item.create_at).toLocaleString('he-IL', {
+                                    year: 'numeric',
+                                    month: '2-digit', 
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  }) : 'תאריך לא ידוע'}
                                 </small>
                               </div>
                             </div>
                             <div className="mb-2">
-                              <strong>שאלה:</strong> {item.prompt}
+                              <strong>שאלה:</strong> {String(item.prompt || '')}
                             </div>
                             <div>
-                              <strong>תשובה:</strong> {item.response}
+                              <strong>תשובה:</strong> {String(item.response || '')}
                             </div>
                           </div>
                         </div>
