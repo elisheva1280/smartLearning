@@ -5,7 +5,10 @@ const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [allHistory, setAllHistory] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showUsers, setShowUsers] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,9 +40,24 @@ const AdminPanel = () => {
     }
   };
 
-  const filteredHistory = selectedUser 
-    ? allHistory.filter(item => item.user_id?._id === selectedUser).reverse()
-    : allHistory.slice().reverse();
+  const filteredHistory = (() => {
+    let filtered = allHistory;
+    
+    if (selectedUser) {
+      filtered = filtered.filter(item => item.user_id?._id === selectedUser);
+    }
+    
+    if (searchTerm) {
+      filtered = filtered.filter(item => {
+        const userName = item.user_id?.name || '';
+        const userPhone = item.user_id?.phone || '';
+        return userName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+               userPhone.includes(searchTerm);
+      });
+    }
+    
+    return filtered.slice().reverse();
+  })();
 
   if (loading) {
     return (
@@ -123,25 +141,111 @@ const AdminPanel = () => {
                 </div>
 
                 <div className="mt-4">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h4>היסטוריית שאלות</h4>
-                    <select 
-                      className="form-select w-auto"
-                      value={selectedUser}
-                      onChange={(e) => setSelectedUser(e.target.value)}
+                  <div className="d-flex gap-3 mb-4">
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => setShowUsers(!showUsers)}
                       style={{ borderRadius: "1rem" }}
                     >
-                      <option value="">כל המשתמשים</option>
-                      {Array.isArray(allHistory) && allHistory.length > 0 && [...new Set(allHistory.map(h => h.user_id?._id).filter(Boolean))].map(userId => {
-                        const historyItem = allHistory.find(h => h.user_id?._id === userId);
-                        const userName = historyItem?.user_id?.name || 'משתמש לא ידוע';
-                        return (
-                          <option key={userId} value={userId}>
-                            {userName}
-                          </option>
-                        );
-                      })}
-                    </select>
+                      <i className="bi bi-people me-2"></i>
+                      {showUsers ? 'היסטורית שאלות' : 'משתמשים'}
+                    </button>
+                  </div>
+
+                  {showUsers && (
+                    <div className="mb-4">
+                      <h4 className="mb-3">רשימת משתמשים</h4>
+                      <div className="mb-3">
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="חיפוש משתמש לפי שם או טלפון..."
+                          value={userSearchTerm}
+                          onChange={(e) => setUserSearchTerm(e.target.value)}
+                          style={{ borderRadius: "1rem" }}
+                        />
+                      </div>
+                      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                        {Array.isArray(users) && users.filter(user => {
+                          if (!userSearchTerm) return true;
+                          return user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                                 user.phone.includes(userSearchTerm);
+                        }).map(user => (
+                          <div key={user._id} className="card mb-2 border-0" style={{
+                            background: "rgba(34, 197, 94, 0.05)",
+                            borderRadius: "1rem"
+                          }}>
+                            <div className="card-body p-3">
+                              <div className="d-flex justify-content-between align-items-center">
+                                <div>
+                                  <h6 className="mb-1 fw-bold">{user.name} - {user.phone}</h6>
+                                  <small className="text-muted">
+                                    {user.isAdmin ? 'מנהל' : 'משתמש רגיל'}
+                                  </small>
+                                </div>
+                                <button 
+                                  className="btn btn-outline-primary btn-sm"
+                                  onClick={() => {
+                                    setSelectedUser(user._id);
+                                    setShowUsers(false);
+                                  }}
+                                  style={{ borderRadius: "0.5rem" }}
+                                >
+                                  היסטוריית משתמש
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h4>היסטוריית שאלות</h4>
+                      {selectedUser && (
+                        <button 
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={() => {
+                            setSelectedUser('');
+                            setShowUsers(true);
+                          }}
+                          style={{ borderRadius: "0.5rem" }}
+                        >
+                          <i className="bi bi-arrow-left me-2"></i>
+                          חזרה למשתמשים
+                        </button>
+                      )}
+                      <select 
+                        className="form-select w-auto"
+                        value={selectedUser}
+                        onChange={(e) => setSelectedUser(e.target.value)}
+                        style={{ borderRadius: "1rem" }}
+                      >
+                        <option value="">כל המשתמשים</option>
+                        {Array.isArray(allHistory) && allHistory.length > 0 && [...new Set(allHistory.map(h => h.user_id?._id).filter(Boolean))].map(userId => {
+                          const historyItem = allHistory.find(h => h.user_id?._id === userId);
+                          const userName = historyItem?.user_id?.name || 'משתמש לא ידוע';
+                          const userPhone = historyItem?.user_id?.phone || 'טלפון לא ידוע';
+                          return (
+                            <option key={userId} value={userId}>
+                              {userName} - {userPhone}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="חיפוש לפי שם או טלפון..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ borderRadius: "1rem" }}
+                      />
+                    </div>
                   </div>
 
                   <div style={{ maxHeight: "500px", overflowY: "auto" }}>
