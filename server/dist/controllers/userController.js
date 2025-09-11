@@ -41,7 +41,6 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getUserById = getUserById;
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('Register request body:', req.body);
         const { name, phone, password } = req.body;
         const existingUser = yield models_1.User.findOne({ name, phone });
         if (existingUser) {
@@ -65,9 +64,7 @@ exports.register = register;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, phone, password } = req.body;
-        console.log('Login attempt:', { name, phone, password });
         const user = yield models_1.User.findOne({ name, phone });
-        console.log('Found user:', user);
         if (!user) {
             return res.status(400).json({ error: 'שם משתמש, טלפון או סיסמה שגויים' });
         }

@@ -25,7 +25,6 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
     try {
-        console.log('Register request body:', req.body);
         const { name, phone, password } = req.body;
         
         const existingUser = await User.findOne({ name, phone });
@@ -57,10 +56,7 @@ export const login = async (req: Request, res: Response) => {
     try {
         const { name, phone, password } = req.body;
         
-        console.log('Login attempt:', { name, phone, password });
-        
         const user = await User.findOne({ name, phone });
-        console.log('Found user:', user);
         
         if (!user) {
             return res.status(400).json({ error: 'שם משתמש, טלפון או סיסמה שגויים' });

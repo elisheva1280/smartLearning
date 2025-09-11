@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -11,6 +12,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -33,11 +35,7 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
-        sessionStorage.setItem('token', data.token);
-        sessionStorage.setItem('user', JSON.stringify(data.user));
-        sessionStorage.setItem('userName', data.user.name);
-        sessionStorage.setItem('userPhone', data.user.phone);
-        sessionStorage.setItem('isAdmin', data.user.isAdmin);
+        login(data.user, data.token);
         navigate('/');
       } else {
         setError(data.error || 'שגיאה ברישום');
