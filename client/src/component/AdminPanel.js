@@ -12,7 +12,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem('isAdmin');
+    const isAdmin = sessionStorage.getItem('isAdmin');
     if (!isAdmin) {
       navigate('/');
       return;
@@ -22,13 +22,16 @@ const AdminPanel = () => {
 
   const fetchData = async () => {
     try {
+      const token = sessionStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+      
       // קבלת כל המשתמשים
-      const usersResponse = await fetch('http://localhost:3001/api/users');
+      const usersResponse = await fetch('http://localhost:3001/api/users', { headers });
       const usersData = await usersResponse.json();
       setUsers(usersData);
 
       // קבלת כל הפרומפטים
-      const historyResponse = await fetch('http://localhost:3001/api/prompts');
+      const historyResponse = await fetch('http://localhost:3001/api/prompts', { headers });
       const historyData = await historyResponse.json();
       setAllHistory(historyData);
     } catch (error) {
@@ -62,13 +65,13 @@ const AdminPanel = () => {
   if (loading) {
     return (
       <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)"
       }}>
-        <div className="text-center text-white">
-          <div className="spinner-border mb-3" role="status" style={{ width: "3rem", height: "3rem" }}>
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status" style={{ width: "3rem", height: "3rem" }}>
             <span className="visually-hidden">Loading...</span>
           </div>
-          <h4>טוען נתוני מנהל...</h4>
+          <h4 style={{ color: "#475569" }}>טוען נתוני מנהל...</h4>
         </div>
       </div>
     );
@@ -76,35 +79,135 @@ const AdminPanel = () => {
 
   return (
     <div style={{ 
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      fontFamily: "'Inter', sans-serif",
-      minHeight: "100vh"
+      background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      minHeight: "100vh",
+      position: "relative"
     }}>
+      {/* Subtle background pattern */}
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundImage: `radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+                         radial-gradient(circle at 75% 75%, rgba(118, 75, 162, 0.05) 0%, transparent 50%)`,
+        pointerEvents: "none"
+      }}></div>
+      <style>{`
+        .admin-main-card {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+        .stat-card {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .stat-card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+        .admin-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          color: white;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .admin-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+          color: white;
+        }
+        .admin-btn-outline {
+          background: rgba(255, 255, 255, 0.9);
+          border: 2px solid #e2e8f0;
+          color: #475569;
+          transition: all 0.3s ease;
+        }
+        .admin-btn-outline:hover {
+          background: #f8fafc;
+          border-color: #667eea;
+          color: #667eea;
+          transform: translateY(-2px);
+        }
+        .premium-input {
+          background: rgba(255, 255, 255, 0.95) !important;
+          border: 2px solid #e2e8f0 !important;
+          color: #1e293b !important;
+        }
+        .premium-input:focus {
+          background: rgba(255, 255, 255, 1) !important;
+          border-color: #667eea !important;
+          box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15) !important;
+        }
+        .history-card {
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid #e2e8f0;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .history-card:hover {
+          background: rgba(255, 255, 255, 1);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .user-card {
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid #e2e8f0;
+          transition: all 0.3s ease;
+        }
+        .user-card:hover {
+          background: rgba(255, 255, 255, 1);
+          border-color: #667eea;
+          transform: translateY(-2px);
+        }
+      `}</style>
+      
       <div className="container py-4">
         <div className="row">
           <div className="col-12">
-            <div className="card border-0 shadow-2xl" style={{
-              borderRadius: "2rem",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(20px)"
+            <div className="card border-0 admin-main-card" style={{
+              borderRadius: "2rem"
             }}>
               <div className="card-body p-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h1 className="display-6 fw-bold mb-0" style={{ 
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent"
-                  }}>
-                    <i className="bi bi-shield-check me-3"></i>
-                    פאנל מנהל
-                  </h1>
+                  <div className="d-flex align-items-center">
+                    <div className="d-inline-flex align-items-center justify-content-center rounded-circle me-4" style={{
+                      width: "70px",
+                      height: "70px",
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      boxShadow: "0 15px 35px rgba(102, 126, 234, 0.3)"
+                    }}>
+                      <i className="bi bi-shield-check text-white" style={{ fontSize: "1.8rem" }}></i>
+                    </div>
+                    <h1 className="display-5 fw-bold mb-0" style={{ 
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent"
+                    }}>
+                      פאנל מנהל
+                    </h1>
+                  </div>
                   <button 
-                    className="btn btn-outline-danger"
+                    className="btn"
                     onClick={() => {
-                      localStorage.removeItem('isAdmin');
-                      navigate('/');
+                      sessionStorage.clear();
+                      navigate('/login');
                     }}
-                    style={{ borderRadius: "1rem" }}
+                    style={{ 
+                      borderRadius: "1.2rem",
+                      padding: "0.75rem 1.5rem",
+                      fontWeight: "600",
+                      border: "2px solid #fecaca",
+                      background: "#fef2f2",
+                      color: "#dc2626"
+                    }}
                   >
                     <i className="bi bi-box-arrow-right me-2"></i>יציאה
                   </button>
@@ -112,29 +215,50 @@ const AdminPanel = () => {
 
                 <div className="row g-4">
                   <div className="col-md-4">
-                    <div className="card border-0" style={{ background: "rgba(102, 126, 234, 0.1)" }}>
-                      <div className="card-body text-center">
-                        <i className="bi bi-people text-primary" style={{ fontSize: "2rem" }}></i>
-                        <h3 className="mt-2">{Array.isArray(users) ? users.length : 0}</h3>
-                        <p className="mb-0">משתמשים רשומים</p>
+                    <div className="card border-0 stat-card" style={{ borderRadius: "1.5rem" }}>
+                      <div className="card-body text-center p-4">
+                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style={{
+                          width: "60px",
+                          height: "60px",
+                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          boxShadow: "0 10px 25px rgba(102, 126, 234, 0.3)"
+                        }}>
+                          <i className="bi bi-people text-white" style={{ fontSize: "1.5rem" }}></i>
+                        </div>
+                        <h2 className="fw-bold" style={{ color: "#1e293b", fontSize: "2.5rem" }}>{Array.isArray(users) ? users.length : 0}</h2>
+                        <p className="mb-0 fw-semibold" style={{ color: "#64748b" }}>משתמשים רשומים</p>
                       </div>
                     </div>
                   </div>
                   <div className="col-md-4">
-                    <div className="card border-0" style={{ background: "rgba(118, 75, 162, 0.1)" }}>
-                      <div className="card-body text-center">
-                        <i className="bi bi-chat-dots text-primary" style={{ fontSize: "2rem" }}></i>
-                        <h3 className="mt-2">{Array.isArray(allHistory) ? allHistory.length : 0}</h3>
-                        <p className="mb-0">שאלות בסך הכל</p>
+                    <div className="card border-0 stat-card" style={{ borderRadius: "1.5rem" }}>
+                      <div className="card-body text-center p-4">
+                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style={{
+                          width: "60px",
+                          height: "60px",
+                          background: "linear-gradient(135deg, #764ba2 0%, #f093fb 100%)",
+                          boxShadow: "0 10px 25px rgba(118, 75, 162, 0.3)"
+                        }}>
+                          <i className="bi bi-chat-dots text-white" style={{ fontSize: "1.5rem" }}></i>
+                        </div>
+                        <h2 className="fw-bold" style={{ color: "#1e293b", fontSize: "2.5rem" }}>{Array.isArray(allHistory) ? allHistory.length : 0}</h2>
+                        <p className="mb-0 fw-semibold" style={{ color: "#64748b" }}>שאלות בסך הכל</p>
                       </div>
                     </div>
                   </div>
                   <div className="col-md-4">
-                    <div className="card border-0" style={{ background: "rgba(34, 197, 94, 0.1)" }}>
-                      <div className="card-body text-center">
-                        <i className="bi bi-person-check text-success" style={{ fontSize: "2rem" }}></i>
-                        <h3 className="mt-2">{Array.isArray(allHistory) && allHistory.length > 0 ? new Set(allHistory.map(h => h.user_id?._id).filter(Boolean)).size : 0}</h3>
-                        <p className="mb-0">משתמשים פעילים</p>
+                    <div className="card border-0 stat-card" style={{ borderRadius: "1.5rem" }}>
+                      <div className="card-body text-center p-4">
+                        <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style={{
+                          width: "60px",
+                          height: "60px",
+                          background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                          boxShadow: "0 10px 25px rgba(34, 197, 94, 0.3)"
+                        }}>
+                          <i className="bi bi-person-check text-white" style={{ fontSize: "1.5rem" }}></i>
+                        </div>
+                        <h2 className="fw-bold" style={{ color: "#1e293b", fontSize: "2.5rem" }}>{Array.isArray(allHistory) && allHistory.length > 0 ? new Set(allHistory.map(h => h.user_id?._id).filter(Boolean)).size : 0}</h2>
+                        <p className="mb-0 fw-semibold" style={{ color: "#64748b" }}>משתמשים פעילים</p>
                       </div>
                     </div>
                   </div>
@@ -143,26 +267,35 @@ const AdminPanel = () => {
                 <div className="mt-4">
                   <div className="d-flex gap-3 mb-4">
                     <button 
-                      className="btn btn-primary"
+                      className="btn admin-btn"
                       onClick={() => setShowUsers(!showUsers)}
-                      style={{ borderRadius: "1rem" }}
+                      style={{ 
+                        borderRadius: "1.2rem",
+                        padding: "0.75rem 1.5rem",
+                        fontWeight: "600",
+                        fontSize: "1rem"
+                      }}
                     >
                       <i className="bi bi-people me-2"></i>
-                      {showUsers ? 'היסטורית שאלות' : 'משתמשים'}
+                      {showUsers ? 'היסטוריית שאלות' : 'משתמשים'}
                     </button>
                   </div>
 
                   {showUsers && (
                     <div className="mb-4">
-                      <h4 className="mb-3">רשימת משתמשים</h4>
+                      <h4 className="mb-3" style={{ color: "#1e293b" }}>רשימת משתמשים</h4>
                       <div className="mb-3">
                         <input
                           type="text"
-                          className="form-control"
+                          className="form-control premium-input"
                           placeholder="חיפוש משתמש לפי שם או טלפון..."
                           value={userSearchTerm}
                           onChange={(e) => setUserSearchTerm(e.target.value)}
-                          style={{ borderRadius: "1rem" }}
+                          style={{ 
+                            borderRadius: "1.2rem",
+                            padding: "0.75rem 1.2rem",
+                            fontSize: "1rem"
+                          }}
                         />
                       </div>
                       <div style={{ maxHeight: "400px", overflowY: "auto" }}>
@@ -171,20 +304,19 @@ const AdminPanel = () => {
                           return user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
                                  user.phone.includes(userSearchTerm);
                         }).map(user => (
-                          <div key={user._id} className="card mb-2 border-0" style={{
-                            background: "rgba(34, 197, 94, 0.05)",
+                          <div key={user._id} className="card mb-2 border-0 user-card" style={{
                             borderRadius: "1rem"
                           }}>
                             <div className="card-body p-3">
                               <div className="d-flex justify-content-between align-items-center">
                                 <div>
-                                  <h6 className="mb-1 fw-bold">{user.name} - {user.phone}</h6>
-                                  <small className="text-muted">
+                                  <h6 className="mb-1 fw-bold" style={{ color: "#1e293b" }}>{user.name} - {user.phone}</h6>
+                                  <small style={{ color: "#64748b" }}>
                                     {user.isAdmin ? 'מנהל' : 'משתמש רגיל'}
                                   </small>
                                 </div>
                                 <button 
-                                  className="btn btn-outline-primary btn-sm"
+                                  className="btn admin-btn-outline btn-sm"
                                   onClick={() => {
                                     setSelectedUser(user._id);
                                     setShowUsers(false);
@@ -203,10 +335,10 @@ const AdminPanel = () => {
 
                   <div className="mb-3">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                      <h4>היסטוריית שאלות</h4>
+                      <h3 className="fw-bold" style={{ color: "#1e293b" }}>היסטוריית שאלות</h3>
                       {selectedUser && (
                         <button 
-                          className="btn btn-outline-secondary btn-sm"
+                          className="btn admin-btn-outline btn-sm"
                           onClick={() => {
                             setSelectedUser('');
                             setShowUsers(true);
@@ -218,7 +350,7 @@ const AdminPanel = () => {
                         </button>
                       )}
                       <select 
-                        className="form-select w-auto"
+                        className="form-select w-auto premium-input"
                         value={selectedUser}
                         onChange={(e) => setSelectedUser(e.target.value)}
                         style={{ borderRadius: "1rem" }}
@@ -239,11 +371,15 @@ const AdminPanel = () => {
                     <div className="mb-3">
                       <input
                         type="text"
-                        className="form-control"
+                        className="form-control premium-input"
                         placeholder="חיפוש לפי שם או טלפון..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ borderRadius: "1rem" }}
+                        style={{ 
+                          borderRadius: "1.2rem",
+                          padding: "0.75rem 1.2rem",
+                          fontSize: "1rem"
+                        }}
                       />
                     </div>
                   </div>
@@ -251,22 +387,21 @@ const AdminPanel = () => {
                   <div style={{ maxHeight: "500px", overflowY: "auto" }}>
                     {!Array.isArray(filteredHistory) || filteredHistory.length === 0 ? (
                       <div className="text-center py-4">
-                        <i className="bi bi-inbox text-muted" style={{ fontSize: "3rem" }}></i>
-                        <p className="text-muted mt-2">אין היסטוריה</p>
+                        <i className="bi bi-inbox" style={{ fontSize: "3rem", color: "#94a3b8" }}></i>
+                        <p className="mt-2" style={{ color: "#64748b" }}>אין היסטוריה</p>
                       </div>
                     ) : (
                       Array.isArray(filteredHistory) && filteredHistory.map((item, index) => (
-                        <div key={item._id} className="card mb-3 border-0" style={{
-                          background: "rgba(102, 126, 234, 0.05)",
-                          borderRadius: "1rem"
+                        <div key={item._id} className="card mb-3 border-0 history-card" style={{
+                          borderRadius: "1.5rem"
                         }}>
-                          <div className="card-body p-3">
-                            <div className="d-flex justify-content-between align-items-start mb-2">
+                          <div className="card-body p-4">
+                            <div className="d-flex justify-content-between align-items-start mb-3">
                               <div>
-                                <h6 className="mb-1 fw-bold text-primary">
+                                <h6 className="mb-1 fw-bold" style={{ color: "#1e293b" }}>
                                   {item.user_id?.name || 'משתמש לא ידוע'} - {item.user_id?.phone || 'טלפון לא ידוע'}
                                 </h6>
-                                <small className="text-muted">
+                                <small style={{ color: "#64748b" }}>
                                   {(() => {
                                     if (item.category && item.subcategory) {
                                       return `${item.category} • ${item.subcategory}`;
@@ -288,11 +423,13 @@ const AdminPanel = () => {
                                 </small>
                               </div>
                             </div>
-                            <div className="mb-2">
-                              <strong>שאלה:</strong> {String(item.prompt || '')}
+                            <div className="mb-3">
+                              <strong style={{ color: "#374151" }}>שאלה:</strong> 
+                              <div style={{ color: "#1f2937", marginTop: "0.5rem", padding: "0.75rem", background: "#f8fafc", borderRadius: "0.75rem", border: "1px solid #e2e8f0" }}>{String(item.prompt || '')}</div>
                             </div>
                             <div>
-                              <strong>תשובה:</strong> {String(item.response || '')}
+                              <strong style={{ color: "#374151" }}>תשובה:</strong> 
+                              <div style={{ color: "#1f2937", marginTop: "0.5rem", padding: "0.75rem", background: "#f8fafc", borderRadius: "0.75rem", border: "1px solid #e2e8f0" }}>{String(item.response || '')}</div>
                             </div>
                           </div>
                         </div>

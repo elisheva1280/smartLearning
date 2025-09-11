@@ -3,7 +3,9 @@ import { IUser } from '../types/User';
 
 const userSchema: Schema = new Schema({
     name: { type: String, required: true },
+    username: { type: String, required: true },
     phone: { type: String, required: true },
+    password: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
 });
 

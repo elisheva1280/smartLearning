@@ -9,8 +9,8 @@ const HistoryPage = () => {
   useEffect(() => {
     const fetchUserHistory = async () => {
       try {
-        const userName = localStorage.getItem('userName');
-        const userPhone = localStorage.getItem('userPhone');
+        const userName = sessionStorage.getItem('userName');
+        const userPhone = sessionStorage.getItem('userPhone');
         console.log('מחפש היסטוריה עבור:', userName, userPhone);
         
         if (!userName || !userPhone) {
@@ -19,10 +19,12 @@ const HistoryPage = () => {
           return;
         }
         
-        // קבלת כל הפרומפטים וסינון בצד הקליינט
-        const [usersResponse, promptsResponse, userCheckResponse] = await Promise.all([
-          fetch('http://localhost:3001/api/users'),
-          fetch('http://localhost:3001/api/prompts'),
+        // קבלת נתוני המשתמש והפרומפטים
+        const token = sessionStorage.getItem('token');
+        const [promptsResponse, userCheckResponse] = await Promise.all([
+          fetch('http://localhost:3001/api/prompts', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
           fetch('http://localhost:3001/api/users/check', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -30,30 +32,24 @@ const HistoryPage = () => {
           })
         ]);
         
-        const users = await usersResponse.json();
         const allPrompts = await promptsResponse.json();
         const userData = await userCheckResponse.json();
         
-        console.log('נתונים:', { users, allPrompts, userData });
+        console.log('נתונים:', { allPrompts, userData });
         
-        if (userData.exists) {
+        if (userData.exists && userData.user) {
           console.log('משתמש קיים, מחפש פרומפטים עבור:', userName, userPhone);
-          // חיפוש המשתמש במערך המשתמשים
-          const currentUser = users.find(u => u.name === userName && u.phone === userPhone);
-          console.log('משתמש נמצא במערך:', currentUser);
+          const currentUser = userData.user;
+          console.log('משתמש נמצא:', currentUser);
           
-          if (currentUser) {
-            // סינון פרומפטים של המשתמש הנוכחי
-            const userPrompts = allPrompts.filter(prompt => {
-              const promptUserId = prompt.user_id?._id || prompt.user_id;
-              console.log('משווה:', promptUserId, 'עם', currentUser._id);
-              return promptUserId === currentUser._id;
-            });
-            console.log('פרומפטים של המשתמש:', userPrompts);
-            setPrompts(userPrompts.reverse());
-          } else {
-            console.log('משתמש לא נמצא במערך');
-          }
+          // סינון פרומפטים של המשתמש הנוכחי
+          const userPrompts = allPrompts.filter(prompt => {
+            const promptUserId = prompt.user_id?._id || prompt.user_id;
+            console.log('משווה:', promptUserId, 'עם', currentUser.id);
+            return promptUserId === currentUser.id;
+          });
+          console.log('פרומפטים של המשתמש:', userPrompts);
+          setPrompts(userPrompts.reverse());
         } else {
           console.log('משתמש לא קיים');
         }

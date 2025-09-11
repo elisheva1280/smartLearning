@@ -25,24 +25,28 @@ const AIResponse = () => {
         setAiResponse(responseText);
         
         // שמירה עם המשתמש הנוכחי
-        const userName = localStorage.getItem('userName');
-        const userPhone = localStorage.getItem('userPhone');
+        const userName = sessionStorage.getItem('userName');
+        const userPhone = sessionStorage.getItem('userPhone');
         
         if (userName && userPhone && !savedRef.current) {
           savedRef.current = true;
           try {
             console.log('מחפש משתמש:', userName, userPhone);
             
-            // קבלת כל המשתמשים וחיפוש המשתמש הנוכחי
-            const usersResponse = await fetch('http://localhost:3001/api/users');
-            const users = await usersResponse.json();
-            const currentUser = users.find(u => u.name === userName && u.phone === userPhone);
+            // חיפוש המשתמש הנוכחי
+            const userCheckResponse = await fetch('http://localhost:3001/api/users/check', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: userName, phone: userPhone })
+            });
+            const userData = await userCheckResponse.json();
+            const currentUser = userData.exists ? userData.user : null;
             
             console.log('משתמש נמצא:', currentUser);
             
             if (currentUser) {
               const promptData = {
-                user_id: currentUser._id,
+                user_id: currentUser.id,
                 prompt: prompt,
                 response: responseText,
                 category: category,

@@ -8,12 +8,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getAllUsers = void 0;
+exports.checkUser = exports.createAdmin = exports.deleteUser = exports.updateUser = exports.createUser = exports.login = exports.register = exports.getUserById = exports.getAllUsers = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const models_1 = require("../models");
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield models_1.User.find();
+        console.log('Returning users:', users);
         res.json(users);
     }
     catch (error) {
@@ -33,10 +39,58 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getUserById = getUserById;
+const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Register request body:', req.body);
+        const { name, phone, password } = req.body;
+        const existingUser = yield models_1.User.findOne({ name, phone });
+        if (existingUser) {
+            return res.status(400).json({ error: 'משתמש עם שם וטלפון זה כבר קיים' });
+        }
+        const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
+        const user = new models_1.User({ name, username: name, phone, password: hashedPassword });
+        yield user.save();
+        const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.name, phone: user.phone, isAdmin: user.isAdmin }, process.env.JWT_SECRET || 'fallback-secret', { expiresIn: '24h' });
+        res.status(201).json({
+            token,
+            user: { id: user._id, name: user.name, phone: user.phone, isAdmin: user.isAdmin }
+        });
+    }
+    catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({ error: 'שגיאה ברישום משתמש' });
+    }
+});
+exports.register = register;
+const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { name, phone, password } = req.body;
+        console.log('Login attempt:', { name, phone, password });
+        const user = yield models_1.User.findOne({ name, phone });
+        console.log('Found user:', user);
+        if (!user) {
+            return res.status(400).json({ error: 'שם משתמש, טלפון או סיסמה שגויים' });
+        }
+        const isValidPassword = yield bcryptjs_1.default.compare(password, user.password);
+        if (!isValidPassword) {
+            return res.status(400).json({ error: 'שם משתמש, טלפון או סיסמה שגויים' });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user._id, name: user.name, phone: user.phone, isAdmin: user.isAdmin }, process.env.JWT_SECRET || 'fallback-secret', { expiresIn: '24h' });
+        res.json({
+            token,
+            user: { id: user._id, name: user.name, phone: user.phone, isAdmin: user.isAdmin }
+        });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'שגיאה בהתחברות' });
+    }
+});
+exports.login = login;
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, phone } = req.body;
-        const user = new models_1.User({ name, phone });
+        const { name, phone, password } = req.body;
+        const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
+        const user = new models_1.User({ name, phone, password: hashedPassword });
         yield user.save();
         res.status(201).json(user);
     }
@@ -69,6 +123,29 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteUser = deleteUser;
+const createAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { name, phone, password } = req.body;
+        const existingUser = yield models_1.User.findOne({ phone });
+        if (existingUser) {
+            const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
+            existingUser.password = hashedPassword;
+            existingUser.isAdmin = true;
+            yield existingUser.save();
+            res.json({ message: 'משתמש עודכן למנהל', user: existingUser });
+        }
+        else {
+            const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
+            const admin = new models_1.User({ name, phone, password: hashedPassword, isAdmin: true });
+            yield admin.save();
+            res.status(201).json({ message: 'מנהל נוצר בהצלחה', user: admin });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: 'שגיאה ביצירת מנהל' });
+    }
+});
+exports.createAdmin = createAdmin;
 const checkUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, phone } = req.body;

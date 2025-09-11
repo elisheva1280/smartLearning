@@ -20,11 +20,30 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+// Add logging middleware
+app.use((req, res, next) => {
+    console.log(`=== ${req.method} ${req.path} ===`);
+    console.log('Body:', req.body);
+    console.log('Headers:', req.headers);
+    next();
+});
+// Add error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+});
+// Test route
+app.get('/test', (req, res) => {
+    console.log('Test route hit!');
+    res.json({ message: 'Server is working!' });
+});
 app.use('/api', routes_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, db_1.default)();
+    // Start server first
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
+    // Connect to DB in background
+    (0, db_1.default)();
 });
 startServer();

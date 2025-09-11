@@ -126,18 +126,71 @@ const Learning = () => {
 
   return (
     <div style={{ 
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      fontFamily: "'Inter', sans-serif",
+      background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 25%, #667eea 50%, #764ba2 75%, #f093fb 100%)",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       minHeight: "100vh",
-      paddingBottom: "20rem"
+      paddingBottom: "20rem",
+      position: "relative",
+      overflow: "hidden"
     }}>
+      {/* Premium background effects */}
+      <div style={{
+        position: "absolute",
+        top: "5%",
+        left: "5%",
+        width: "400px",
+        height: "400px",
+        background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
+        borderRadius: "50%",
+        animation: "float 10s ease-in-out infinite"
+      }}></div>
+      <div style={{
+        position: "absolute",
+        bottom: "10%",
+        right: "5%",
+        width: "300px",
+        height: "300px",
+        background: "radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)",
+        borderRadius: "50%",
+        animation: "float 12s ease-in-out infinite reverse"
+      }}></div>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-30px) rotate(180deg); }
+        }
+        .glass-morphism {
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(30px);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+        }
+        .premium-select {
+          background: rgba(255, 255, 255, 0.9) !important;
+          border: 2px solid rgba(102, 126, 234, 0.2) !important;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-select:focus {
+          border-color: #667eea !important;
+          box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+          background: rgba(255, 255, 255, 1) !important;
+        }
+        .premium-textarea {
+          background: rgba(255, 255, 255, 0.95) !important;
+          border: 2px solid rgba(102, 126, 234, 0.2) !important;
+          transition: all 0.3s ease;
+        }
+        .premium-textarea:focus {
+          border-color: #667eea !important;
+          box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+          background: rgba(255, 255, 255, 1) !important;
+        }
+      `}</style>
       <div className="container" style={{ paddingTop: "2rem", paddingBottom: "30rem" }}>
         <div className="row justify-content-center">
           <div className="col-lg-8 col-xl-6">
-            <div className="card border-0 shadow-2xl" style={{
-              borderRadius: "2rem",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(20px)"
+            <div className="card border-0 glass-morphism" style={{
+              borderRadius: "2.5rem"
             }}>
               <div className="card-body p-5">
                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -146,34 +199,49 @@ const Learning = () => {
                     שלום {userName}
                   </div>
                   <button 
-                    className="btn btn-outline-primary btn-lg fw-bold"
+                    className="btn btn-lg fw-bold"
                     onClick={() => navigate('/history')}
                     style={{
-                      borderRadius: "1rem",
-                      border: "2px solid #667eea",
-                      padding: "0.75rem 1.5rem"
+                      borderRadius: "1.2rem",
+                      border: "2px solid rgba(255, 255, 255, 0.3)",
+                      background: "rgba(255, 255, 255, 0.1)",
+                      color: "white",
+                      padding: "0.75rem 1.5rem",
+                      backdropFilter: "blur(10px)",
+                      transition: "all 0.3s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "rgba(255, 255, 255, 0.2)";
+                      e.target.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "rgba(255, 255, 255, 0.1)";
+                      e.target.style.transform = "translateY(0)";
                     }}
                   >
-                    <i className="bi bi-clock-history me-2"></i>ההיסטוריה שלי
+                    <i className="bi bi-journal-bookmark me-2"></i>ההיסטוריה שלי
                   </button>
                 </div>
                 
                 <div className="text-center mb-5">
                   <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-4" style={{
-                    width: "80px",
-                    height: "80px",
+                    width: "100px",
+                    height: "100px",
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    boxShadow: "0 10px 30px rgba(102, 126, 234, 0.3)"
+                    boxShadow: "0 20px 40px rgba(102, 126, 234, 0.4)",
+                    border: "3px solid rgba(255, 255, 255, 0.3)"
                   }}>
                     <i className="bi bi-brain text-white" style={{ fontSize: "2.5rem" }}></i>
                   </div>
-                  <h1 className="display-5 fw-bold mb-3" style={{ 
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  <h1 className="display-4 fw-bold mb-3" style={{ 
+                    background: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
-                    letterSpacing: "-0.02em"
+                    letterSpacing: "-0.02em",
+                    textShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                    color: "white"
                   }}>AI Learning Hub</h1>
-                  <p className="lead text-muted mb-0">Unlock your potential with personalized AI-powered learning</p>
+                  <p className="lead mb-0" style={{ color: "rgba(255,255,255,0.9)", fontSize: "1.2rem" }}>Unlock your potential with personalized AI-powered learning</p>
                 </div>
 
                 <div className="row g-4">
@@ -181,14 +249,15 @@ const Learning = () => {
                     <div className="form-floating">
                       <select
                         id="category"
-                        className="form-select form-select-lg"
+                        className="form-select form-select-lg premium-select"
                         value={selectedCategory}
                         onChange={handleCategoryChange}
                         required
                         style={{
-                          borderRadius: "1rem",
-                          border: "2px solid #e9ecef",
-                          fontSize: "1.1rem"
+                          borderRadius: "1.2rem",
+                          fontSize: "1.1rem",
+                          padding: "1.5rem 1.5rem 0.5rem 1.5rem",
+                          height: "4rem"
                         }}
                       >
                         <option value="" disabled>Choose your learning path</option>
@@ -206,16 +275,17 @@ const Learning = () => {
                     <div className="form-floating">
                       <select
                         id="option"
-                        className="form-select form-select-lg force-dropdown-down"
+                        className="form-select form-select-lg premium-select force-dropdown-down"
                         value={selectedOption}
                         onChange={handleOptionChange}
                         required
                         disabled={!selectedCategory || subcategoriesLoading}
                         style={{
-                          borderRadius: "1rem",
-                          border: "2px solid #e9ecef",
+                          borderRadius: "1.2rem",
                           fontSize: "1.1rem",
-                          backgroundColor: !selectedCategory ? "#f8f9fa" : "",
+                          padding: "1.5rem 1.5rem 0.5rem 1.5rem",
+                          height: "4rem",
+                          backgroundColor: !selectedCategory ? "rgba(248, 249, 250, 0.8)" : "",
                           position: "relative",
                           zIndex: 1
                         }}
@@ -255,16 +325,16 @@ const Learning = () => {
                             <div className="form-floating mb-4">
                               <textarea
                                 id="prompt"
-                                className="form-control"
+                                className="form-control premium-textarea"
                                 value={promptText}
                                 onChange={(e) => setPromptText(e.target.value)}
                                 required
                                 placeholder="What would you like to learn about?"
                                 style={{
-                                  borderRadius: "1rem",
-                                  border: "2px solid #e9ecef",
-                                  minHeight: "120px",
-                                  fontSize: "1.1rem"
+                                  borderRadius: "1.2rem",
+                                  minHeight: "160px",
+                                  fontSize: "1.1rem",
+                                  padding: "2rem 1.5rem 0.5rem 1.5rem"
                                 }}
                               />
                               <label htmlFor="prompt" className="fw-semibold text-muted">
