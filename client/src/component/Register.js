@@ -11,6 +11,8 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -18,29 +20,54 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMessage('');
+    console.log('Register attempt with:', { name, phone, password });
+
+    // בדיקת חוזק סיסמה
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,16}$/;
+    console.log('Password test result:', passwordRegex.test(password));
+    if (!passwordRegex.test(password)) {
+      console.log('Password validation failed');
+      setPasswordError('הסיסמה חייבת להכיל 8-16 תווים, אות גדולה, אות קטנה, מספר ותו מיוחד');
+      setLoading(false);
+      return;
+    }
+    console.log('Password validation passed');
+    setPasswordError('');
 
     if (password !== confirmPassword) {
+      console.log('Password confirmation failed');
       setError('הסיסמאות אינן תואמות');
       setLoading(false);
       return;
     }
+    console.log('Password confirmation passed');
 
     try {
+      console.log('Sending register request...');
       const response = await fetch('http://localhost:3001/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, password })
       });
 
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (response.ok) {
-        login(data.user, data.token);
-        navigate('/');
+        console.log('Registration successful');
+        setSuccessMessage('הרשמה הצליחה! מעביר אותך לאתר...');
+        setTimeout(() => {
+          login(data.user, data.token);
+          navigate('/');
+        }, 1500);
       } else {
+        console.log('Registration failed:', data.error);
         setError(data.error || 'שגיאה ברישום');
       }
     } catch (error) {
+      console.log('Registration error:', error);
       setError('שגיאה בחיבור לשרת');
     } finally {
       setLoading(false);
@@ -100,8 +127,36 @@ const Register = () => {
           </div>
 
           {error && (
-            <div className="alert alert-danger" role="alert">
+            <div className="mb-4" style={{
+              padding: "1rem 1.25rem",
+              background: "rgba(220, 53, 69, 0.1)",
+              border: "1px solid rgba(220, 53, 69, 0.3)",
+              borderRadius: "1rem",
+              color: "#dc3545",
+              fontSize: "0.95rem",
+              textAlign: "right",
+              backdropFilter: "blur(15px)",
+              boxShadow: "0 4px 15px rgba(220, 53, 69, 0.1)"
+            }}>
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
               {error}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="mb-4" style={{
+              padding: "1rem 1.25rem",
+              background: "rgba(34, 197, 94, 0.1)",
+              border: "1px solid rgba(34, 197, 94, 0.3)",
+              borderRadius: "1rem",
+              color: "#22c55e",
+              fontSize: "0.95rem",
+              textAlign: "right",
+              backdropFilter: "blur(15px)",
+              boxShadow: "0 4px 15px rgba(34, 197, 94, 0.1)"
+            }}>
+              <i className="bi bi-check-circle-fill me-2"></i>
+              {successMessage}
             </div>
           )}
 
@@ -159,18 +214,28 @@ const Register = () => {
                   type={showPassword ? "text" : "password"}
                   className="form-control"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (e.target.value && passwordError) {
+                      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,16}$/;
+                      if (passwordRegex.test(e.target.value)) {
+                        setPasswordError('');
+                      }
+                    }
+                  }}
                   required
-                  minLength="4"
+                  minLength="8"
+                  maxLength="16"
                   style={{ 
                     borderRadius: "1.2rem", 
                     padding: "1rem 3.5rem 1rem 1.5rem",
                     background: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                    border: passwordError ? "2px solid rgba(220, 53, 69, 0.5)" : "1px solid rgba(255, 255, 255, 0.3)",
                     color: "white",
                     fontSize: "1.1rem",
                     direction: "rtl",
-                    textAlign: "right"
+                    textAlign: "right",
+                    boxShadow: passwordError ? "0 0 0 0.2rem rgba(220, 53, 69, 0.25)" : "none"
                   }}
                   placeholder="הכנס סיסמה"
                 />
@@ -193,6 +258,21 @@ const Register = () => {
                   <i className={`bi ${showPassword ? 'bi-eye-fill' : 'bi-eye-slash-fill'}`}></i>
                 </button>
               </div>
+              {passwordError && (
+                <div className="mt-2" style={{
+                  padding: "0.75rem 1rem",
+                  background: "rgba(220, 53, 69, 0.1)",
+                  border: "1px solid rgba(220, 53, 69, 0.3)",
+                  borderRadius: "0.5rem",
+                  color: "#dc3545",
+                  fontSize: "0.875rem",
+                  textAlign: "right",
+                  backdropFilter: "blur(10px)"
+                }}>
+                  <i className="bi bi-exclamation-circle me-2"></i>
+                  {passwordError}
+                </div>
+              )}
             </div>
 
             <div className="mb-4">

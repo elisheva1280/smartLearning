@@ -121,7 +121,18 @@ const Login = () => {
           </div>
 
           {error && (
-            <div className="alert alert-danger" role="alert">
+            <div className="mb-4" style={{
+              padding: "1rem 1.25rem",
+              background: "rgba(220, 53, 69, 0.1)",
+              border: "1px solid rgba(220, 53, 69, 0.3)",
+              borderRadius: "1rem",
+              color: "#dc3545",
+              fontSize: "0.95rem",
+              textAlign: "right",
+              backdropFilter: "blur(15px)",
+              boxShadow: "0 4px 15px rgba(220, 53, 69, 0.1)"
+            }}>
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
               {error}
             </div>
           )}

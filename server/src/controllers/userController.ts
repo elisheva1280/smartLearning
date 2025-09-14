@@ -27,6 +27,14 @@ export const register = async (req: Request, res: Response) => {
     try {
         const { name, phone, password } = req.body;
         
+        // בדיקת חוזק סיסמה
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,16}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ 
+                error: 'הסיסמה חייבת להכיל 8-16 תווים, אות גדולה, אות קטנה, מספר ותו מיוחד' 
+            });
+        }
+        
         const existingUser = await User.findOne({ name, phone });
         if (existingUser) {
             return res.status(400).json({ error: 'משתמש עם שם וטלפון זה כבר קיים' });

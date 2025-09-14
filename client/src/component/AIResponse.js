@@ -20,9 +20,32 @@ const AIResponse = () => {
 
     const generateResponse = async () => {
       try {
-        // יצירת תשובה מדומה
-        const responseText = `זוהי תשובה מדומה לשאלה שלך על ${subcategory} בתחום ${category}. התשובה נשמרת במסד הנתונים.`;
-        setAiResponse(responseText);
+        // שליחת השאלה ל-OpenAI API עם קונטקסט
+        const openaiResponse = await fetch('http://localhost:3001/api/openai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            prompt, 
+            category, 
+            subcategory 
+          })
+        });
+        
+        const openaiData = await openaiResponse.json();
+        
+        if (openaiResponse.ok) {
+          setAiResponse(openaiData.response);
+        } else {
+          // אם זו שגיאת AI, נציג הודעה מתאימה
+          if (openaiData.isAIError) {
+            const errorMessage = `⚠️ שגיאה בשירות ה-AI\n\n${openaiData.error}\n\nאנא נסה שוב מאוחר יותר או פנה לתמיכה טכנית.`;
+            setAiResponse(errorMessage);
+          } else {
+            throw new Error(openaiData.error || 'שגיאה בקבלת תשובה מ-AI');
+          }
+        }
+        
+        const responseText = openaiData.response;
         
         // שמירה עם המשתמש הנוכחי
         const userName = sessionStorage.getItem('userName');
@@ -153,13 +176,18 @@ const AIResponse = () => {
                 </div>
 
                 <div className="card" style={{
-                  background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
+                  background: aiResponse.includes('⚠️') ? 
+                    "linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(245, 101, 101, 0.1) 100%)" :
+                    "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
                   borderRadius: "1.5rem",
-                  border: "2px solid rgba(34, 197, 94, 0.2)"
+                  border: aiResponse.includes('⚠️') ? 
+                    "2px solid rgba(239, 68, 68, 0.2)" :
+                    "2px solid rgba(34, 197, 94, 0.2)"
                 }}>
                   <div className="card-body p-4">
-                    <h6 className="fw-bold mb-3 text-success">
-                      <i className="bi bi-lightbulb me-2"></i>AI Response:
+                    <h6 className={`fw-bold mb-3 ${aiResponse.includes('⚠️') ? 'text-danger' : 'text-success'}`}>
+                      <i className={`bi ${aiResponse.includes('⚠️') ? 'bi-exclamation-triangle' : 'bi-lightbulb'} me-2`}></i>
+                      {aiResponse.includes('⚠️') ? 'System Message:' : 'AI Response:'}
                     </h6>
                     {isGenerating ? (
                       <div className="text-center py-5">
@@ -170,7 +198,11 @@ const AIResponse = () => {
                         <p className="text-muted">This may take a few moments</p>
                       </div>
                     ) : (
-                      <div className="p-3 rounded-3" style={{ background: "rgba(255, 255, 255, 0.7)" }}>
+                      <div className="p-3 rounded-3" style={{ 
+                        background: aiResponse.includes('⚠️') ? 
+                          "rgba(254, 242, 242, 0.8)" : 
+                          "rgba(255, 255, 255, 0.7)" 
+                      }}>
                         <p className="mb-0" style={{ whiteSpace: "pre-wrap", lineHeight: "1.6", fontSize: "1.1rem" }}>
                           {aiResponse}
                         </p>
