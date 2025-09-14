@@ -115,9 +115,9 @@ const Login = () => {
               textShadow: "0 2px 10px rgba(0,0,0,0.3)",
               fontSize: "2rem"
             }}>
-              התחברות
+              Login
             </h2>
-            <p style={{ color: "rgba(255,255,255,0.8)", margin: 0 }}>ברוך הבא חזרה!</p>
+            <p style={{ color: "rgba(255,255,255,0.8)", margin: 0 }}>Welcome back!</p>
           </div>
 
           {error && (
@@ -139,7 +139,7 @@ const Login = () => {
 
           <form onSubmit={handleLogin}>
             <div className="mb-4">
-              <label className="form-label" style={{ color: "white", fontWeight: "500", marginBottom: "0.8rem", textAlign: "right", display: "block" }}>שם</label>
+              <label className="form-label" style={{ color: "white", fontWeight: "500", marginBottom: "0.8rem", textAlign: "left", display: "block" }}>Name</label>
               <input
                 type="text"
                 className="form-control"
@@ -153,15 +153,15 @@ const Login = () => {
                   border: "1px solid rgba(255, 255, 255, 0.3)",
                   color: "white",
                   fontSize: "1.1rem",
-                  direction: "rtl",
-                  textAlign: "right"
+                  direction: "ltr",
+                  textAlign: "left"
                 }}
-                placeholder="הכנס את שמך"
+                placeholder="Enter your name"
               />
             </div>
 
             <div className="mb-4">
-              <label className="form-label" style={{ color: "white", fontWeight: "500", marginBottom: "0.8rem", textAlign: "right", display: "block" }}>מספר טלפון</label>
+              <label className="form-label" style={{ color: "white", fontWeight: "500", marginBottom: "0.8rem", textAlign: "left", display: "block" }}>Phone Number</label>
               <input
                 type="tel"
                 className="form-control"
@@ -175,15 +175,15 @@ const Login = () => {
                   border: "1px solid rgba(255, 255, 255, 0.3)",
                   color: "white",
                   fontSize: "1.1rem",
-                  direction: "rtl",
-                  textAlign: "right"
+                  direction: "ltr",
+                  textAlign: "left"
                 }}
-                placeholder="הכנס מספר טלפון"
+                placeholder="Enter phone number"
               />
             </div>
 
             <div className="mb-4">
-              <label className="form-label" style={{ color: "white", fontWeight: "500", marginBottom: "0.8rem", textAlign: "right", display: "block" }}>סיסמה</label>
+              <label className="form-label" style={{ color: "white", fontWeight: "500", marginBottom: "0.8rem", textAlign: "left", display: "block" }}>Password</label>
               <div className="position-relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -198,17 +198,17 @@ const Login = () => {
                     border: "1px solid rgba(255, 255, 255, 0.3)",
                     color: "white",
                     fontSize: "1.1rem",
-                    direction: "rtl",
-                    textAlign: "right"
+                    direction: "ltr",
+                    textAlign: "left"
                   }}
-                  placeholder="הכנס סיסמה"
+                  placeholder="Enter password"
                 />
                 <button
                   type="button"
                   className="btn position-absolute"
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
-                    left: "15px",
+                    right: "15px",
                     top: "50%",
                     transform: "translateY(-50%)",
                     border: "none",
@@ -253,9 +253,9 @@ const Login = () => {
               {loading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                  מתחבר...
+                 Connecting...
                 </>
-              ) : 'התחבר'}
+              ) : 'Log in'}
             </button>
           </form>
 
@@ -272,7 +272,7 @@ const Login = () => {
               onMouseEnter={(e) => e.target.style.color = "white"}
               onMouseLeave={(e) => e.target.style.color = "rgba(255,255,255,0.8)"}
             >
-              אין לך חשבון? <span style={{ fontWeight: "600" }}>הירשם כאן</span>
+              Don't have an account? <span style={{ fontWeight: "600" }}>Register here</span>
             </button>
           </div>
         </div>
